@@ -1,0 +1,28 @@
+Path: ../bin/rvage_dev3/./rvage_dev3
+Call: --vcf myfile.vcf -o ../tmp/myfile
+
+No genetic map provided
+Calculating genetic distances from constant recombination rate: 1e-08
+
+Loading variant data from VCF file to binary file
+<< myfile.vcf
+>> ../tmp/myfile.bin
+
+ Detected sample size: 50 individuals
+ Buffer window size: 500000 variants (~23 Mb)
+ Data compression: Off
+
+ Running
+ Writing output file ... OK
+ Done
+Process time: 777ms
+Elapsed time: 777ms
+Loading data
+<< ../tmp/myfile.bin
+
+ # individuals: 50 (50 phased)
+ # variants:    6
+
+This is the end!
+Process time: 797ms
+Elapsed time: 798ms

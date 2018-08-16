@@ -1,0 +1,52 @@
+Path: ../bin/rvage_dev3/./rvage_dev3
+Call: age -i ../tmp/../tmp/hi.bin --positions ../tmp/../tmp/hi.positions.txt -m hmm --hmm ../bin/rvage_dev3/_initials.hhmm.tru ../bin/rvage_dev3/_emission.hhmm.tru.100 --Ne 10000 --mut 2e-8 --selectNN 1 --maxConcordant 100 --maxDiscordant 100 -o ../tmp/../tmp/hi_estimation
+
+Loading data
+<< ../tmp/../tmp/hi.bin
+
+ # individuals: 50 (50 phased)
+ # variants:    37
+
+Generating sharing index at target positions
+<< ../tmp/../tmp/hi.positions.txt
+
+ # target sites: 35
+ [9 positions not viable]
+
+  # shared    % freq.    # sites    # pairs
+         2        2.0          2          1
+         3        3.0          2          6
+         4        4.0          1          6
+         5        5.0          2         20
+         7        7.0          2         21
+         9        9.0          1         29
+        10       10.0          2         82
+        12       12.0          1         66
+        15       15.0          1         69
+        19       19.0          4        154
+        21       21.0          2        191
+        30       30.0          2        282
+        79       79.0          3       1206
+        81       81.0          1       1208
+                      ---------- ----------
+ Total:                       26       3341
+
+Generating HMM probabilities from input files
+<< ../bin/rvage_dev3/_initials.hhmm.tru
+<< ../bin/rvage_dev3/_emission.hhmm.tru.100
+ Effective population size,  Ne: 10000
+
+ Initial state probabilities ... OK
+ Emission probabilities ... OK
+ Transition probabilities ... OK
+
+Age estimation, using Hidden Markov Model (HMM)
+>> ../tmp/../tmp/hi_estimation.ccf.txt
+>> ../tmp/../tmp/hi_estimation.cle.txt
+
+ # pairwise analyses = 4160
+
+
+This is the end!
+Process time: 2s 617ms
+Elapsed time: 2s 616ms

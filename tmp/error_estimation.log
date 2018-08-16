@@ -1,0 +1,94 @@
+Path: ../bin/rvage_dev3/./rvage_dev3
+Call: age -i ../tmp/../tmp/error.bin --positions ../tmp/../tmp/error.positions.txt -m hmm --hmm ../bin/rvage_dev3/_initials.hhmm.tru ../bin/rvage_dev3/_emission.hhmm.tru.100 --Ne 10000 --mut 2e-8 --selectNN 1 --maxConcordant 100 --maxDiscordant 100 -o ../tmp/../tmp/error_estimation
+
+Loading data
+<< ../tmp/../tmp/error.bin
+
+ # individuals: 250 (250 phased)
+ # variants:    138
+
+Generating sharing index at target positions
+<< ../tmp/../tmp/error.positions.txt
+
+ # target sites: 136
+ [15 positions not viable]
+
+  # shared    % freq.    # sites    # pairs
+         2        0.4         11          9
+         3        0.6          8         24
+         4        0.8          7         30
+         5        1.0          4         40
+         6        1.2          4         60
+         7        1.4          6         74
+         8        1.6          1         28
+         9        1.8          3         72
+        10        2.0          2         45
+        11        2.2          2        110
+        12        2.4          2        132
+        13        2.6          5        233
+        14        2.8          2        182
+        16        3.2          1        120
+        18        3.6          6        426
+        19        3.8          2        171
+        21        4.2          1        210
+        24        4.8          1        276
+        25        5.0          1        277
+        26        5.2          1        278
+        28        5.6          2        378
+        29        5.8          1        406
+        30        6.0          2        435
+        31        6.2          2        838
+        34        6.8          2        529
+        37        7.4          1        666
+        39        7.8          1        741
+        41        8.2          1        781
+        51       10.2          1       1085
+        54       10.8          1       1328
+        61       12.2          1       1656
+        62       12.4          1       1772
+        63       12.6          2       3443
+        68       13.6          2       2020
+        70       14.0          1       2214
+        73       14.6          1       2283
+        84       16.8          4       5864
+        85       17.0          1       3087
+        86       17.2          3       2860
+        92       18.4          1       3331
+        93       18.6          1       3332
+       124       24.8          1       6451
+       128       25.6          1       6682
+       157       31.4          1       8412
+       193       38.6          1      13233
+       206       41.2          2      13408
+       207       41.4          1      13572
+       218       43.6          1      14413
+       220       44.0          1      14584
+       248       49.6          1      17452
+       253       50.6          1      17643
+       254       50.8          1      17458
+       258       51.6          1      17835
+       276       55.2          3      28874
+       396       79.2          1      27890
+       482       96.4          2      31357
+                      ---------- ----------
+ Total:                      121     291110
+
+Generating HMM probabilities from input files
+<< ../bin/rvage_dev3/_initials.hhmm.tru
+<< ../bin/rvage_dev3/_emission.hhmm.tru.100
+ Effective population size,  Ne: 10000
+
+ Initial state probabilities ... OK
+ Emission probabilities ... OK
+ Transition probabilities ... OK
+
+Age estimation, using Hidden Markov Model (HMM)
+>> ../tmp/../tmp/error_estimation.ccf.txt
+>> ../tmp/../tmp/error_estimation.cle.txt
+
+ # pairwise analyses = 19843
+
+
+This is the end!
+Process time: 12s 60ms
+Elapsed time: 12s 60ms

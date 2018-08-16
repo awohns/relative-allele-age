@@ -1,0 +1,7 @@
+MarkerID Chromosome Position Label Alleles AlleleCount0 AlleleCount1 AlleleCountX GenotypeCount0 GenotypeCount1 GenotypeCount2 GenotypeCountX RecombRate GenDist
+0 1 25 . A,T 99 1 0 49 1 0 0 1.00000000 0.00002500
+1 1 347 . A,T 93 7 0 44 5 1 0 1.00000000 0.00034700
+2 1 651 . A,T 96 4 0 46 4 0 0 1.00000000 0.00065100
+3 1 793 . A,T 93 7 0 44 5 1 0 1.00000000 0.00079300
+4 1 829 . A,T 95 5 0 45 5 0 0 1.00000000 0.00082900
+5 1 961 . A,T 99 1 0 49 1 0 0 1.00000000 0.00096100

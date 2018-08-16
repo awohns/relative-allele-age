@@ -1,0 +1,46 @@
+Path: ./rvage_dev3
+Call: age -i ../geva_output/test.bin --positions ../geva_output/positions.txt -m hmm --hmm initials_true_tester initials_emission_tester --Ne 10000 --mut 2.8e-08 --selectNN 1 --maxConcordant 100 --maxDiscordant 100 -o test_age_estimation
+
+Loading data
+<< ../geva_output/test.bin
+
+ # individuals: 5 (5 phased)
+ # variants:    84
+
+Generating sharing index at target positions
+<< ../geva_output/positions.txt
+
+ # target sites: 84
+ [24 positions not viable]
+
+  # shared    % freq.    # sites    # pairs
+         2       20.0         13          5
+         3       30.0         13          7
+         4       40.0          9         12
+         5       50.0         16         14
+         6       60.0          3          8
+         7       70.0          3         14
+         8       80.0          2         13
+         9       90.0          1         14
+                      ---------- ----------
+ Total:                       60         87
+
+Generating HMM probabilities from input files
+<< initials_true_tester
+<< initials_emission_tester
+ Effective population size,  Ne: 10000
+
+ Initial state probabilities ... OK
+ Emission probabilities ... OK
+ Transition probabilities ... OK
+
+Age estimation, using Hidden Markov Model (HMM)
+>> test_age_estimation.ccf.txt
+>> test_age_estimation.cle.txt
+
+ # pairwise analyses = 1558
+
+
+This is the end!
+Process time: 1s 939ms
+Elapsed time: 1s 939ms
