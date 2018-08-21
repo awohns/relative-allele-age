@@ -29,18 +29,18 @@ from argparse import ArgumentParser
 
  
 #multiple replicates at given parameters
-def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,error_rate,delete_singletons,output):
+def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,error_rate,delete_singletons,output,manual_check):
     replicates = int(replicates)
     summary_stats = np.zeros((replicates,2))
     geva_corrected = list()
 
     for replicate_num in tqdm(range(0,replicates)):
         
-        msprime_ts = simulations.msprime_simulation("1", samples, Ne, length, mut_rate, rec_rate)
-        error_sample = simulations.generate_samples(msprime_ts,"error_sample",float(error_rate))
+        msprime_ts = simulations.msprime_simulation(output, samples, Ne, length, mut_rate, rec_rate)
+        error_sample = simulations.generate_samples(msprime_ts,output,float(error_rate))
 
         freq_matrix=compare.freq_relative_time(msprime_ts,error_sample,delete_singletons)
-        geva_matrix,geva_age_estimates=compare.geva_all_time_orderings(msprime_ts,error_sample,Ne,length,mut_rate,delete_singletons)
+        geva_matrix,geva_age_estimates=compare.geva_all_time_orderings(output,msprime_ts,error_sample,Ne,length,mut_rate,delete_singletons)
         direct_matrix= compare.directly_comparable(msprime_ts,error_sample,delete_singletons)
 
 
@@ -51,8 +51,12 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,erro
         
 
         results.write_summary_stats(output)
+        results.update_accuracy_by_distance(output)
         
-        #results.manually_check_accuracy()
+        if manual_check == True:
+            results.manually_check_accuracy(output)
+
+
 
 
 
@@ -68,13 +72,14 @@ def main():
     parser.add_argument("error_rate")
     parser.add_argument("delete_singletons")
     parser.add_argument("output")
+    parser.add_argument('-manual_check', action='store_true')
 
     args = parser.parse_args()
 
 
     multiple_replicate_results = multiple_replicates(int(args.replicates),int(args.samples),
         int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,args.delete_singletons,
-        str(args.output))
+        str(args.output),args.manual_check)
     
     # with open(args.output, "a") as out:
     #     csv_out=csv.writer(out)

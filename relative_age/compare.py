@@ -98,7 +98,7 @@ def geva_age_estimate(file_name,ne,mut_rate):
 
 
 #I compared with geva_age_estimate and it's pretty close
-def geva_sample_estimate_age(sample_data,Ne,length,mut_rate):
+def geva_sample_estimate_age(file_name,sample_data,Ne,length,mut_rate):
     
     num_individuals = len(sample_data.individuals_metadata[:])
     ind_list = list()
@@ -146,23 +146,23 @@ def geva_sample_estimate_age(sample_data,Ne,length,mut_rate):
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 """
     
-    output_VCF = "../tmp/error.vcf"
+    output_VCF = "../tmp/"+file_name+"error.vcf"
     with open(output_VCF, 'w') as vcf:
         vcf.write(header)
 
     df.to_csv(output_VCF, sep="\t", mode='a',index=False)
-    age_estimates = geva_age_estimate("../tmp/error",10000,2e-8)
+    age_estimates = geva_age_estimate("../tmp/"+file_name,10000,2e-8)
     return(age_estimates)
 
 
 
 #removes singletons
-def geva_all_time_orderings(msprime_ts,sample_data,Ne,length,mutation_rate,delete_singletons):
+def geva_all_time_orderings(file_name,msprime_ts,sample_data,Ne,length,mutation_rate,delete_singletons):
     num_mutations = len(list(msprime_ts.variants())) 
     pairwise_matrix_geva = np.zeros((num_mutations,num_mutations))
 
     #age estimation
-    age_estimates = geva_sample_estimate_age(sample_data,Ne,length,mutation_rate)
+    age_estimates = geva_sample_estimate_age(file_name,sample_data,Ne,length,mutation_rate)
 
     #Loop through all pairs of variants
     #for each pair, determine whether one should be older than other by msprime

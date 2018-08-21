@@ -79,24 +79,45 @@ def direct_distances(msprime_ts,direct_comparisons,physical_distance,genetic_dis
     #return: 1. array of genetic distances of pairwise error; 2. array of physical distances of pairwise error
     return(results)
 
+
 #function to get frequency/geva accuracy by distance
 def accuracy_by_distance(msprime_ts,freq_matrix,geva_matrix,direct_matrix,physical_distance,genetic_distance):
     #look up which pairs of mutations are in the wrong order in pairwise array (either from freq or geva)
-    direct_errors = np.add(pairwise_matrix_binary,direct_comparisons)
     direct_baseline = np.argwhere(direct_matrix == 1)
-    wrong_order = np.argwhere(direct_errors == 2)
-    results = np.zeros((len(direct_baseline), 4))
+    results = np.zeros((len(direct_baseline), 5))
 
     #Iterate through each mutation pair that is directly comparable, recording distance
-    #Check if correct by frequency/GEVA. Make tuple of (idx,distance,freq_correct,geva_correct)
+    #Check if correct by frequency/GEVA. For index assign: genetic distance,physical distance,freq_correct,geva_correct
     for idx,(mut1_index,mut2_index) in enumerate(direct_baseline):
         cur_result = mutation_pair(mut1_index,mut2_index,msprime_ts,physical_distance,genetic_distance)
-
-
+        results[idx,0] = cur_result[0]
+        results[idx,1] = cur_result[1]
+        results[idx,2] = freq_matrix[mut1_index,mut2_index]
+        results[idx,3] = geva_matrix[mut1_index,mut2_index]
+    
     #Using the resulting numpy array of tuples, make regularly spaced bins of 1000 bp and record accuracy
     #for each bin (number of 1's divded by 0's + 1's)
+    bins=np.arange(0,50000,250)
+    results[:,4]=np.digitize(results[:,1],bins)
 
 
+    accuracy_averages=np.zeros((2,len(bins)))
+    for idx,cur_bin in enumerate(bins):
+        num_in_bin=len(results[results[:,4]==idx,:])
+        freq_mismatch=sum(results[results[:,4]==idx,:][:,2]==1)
+        geva_mismatch=sum(results[results[:,4]==idx,:][:,3]==1)
+        freq_accuracy=div_zero(freq_mismatch,num_in_bin)
+        geva_accuracy=div_zero(geva_mismatch,num_in_bin)
+        accuracy_averages[0,idx]=freq_accuracy
+        accuracy_averages[1,idx]=geva_accuracy
 
+    return(accuracy_averages)
+ 
+
+#helper function for preventing division by zero
+def div_zero(x,y):
+    if y == 0:
+        return 0
+    return x / y
 
 

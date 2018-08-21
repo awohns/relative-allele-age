@@ -8,21 +8,21 @@ Loading variant data from VCF file to binary file
 << ../tmp/error.vcf
 >> ../tmp/../tmp/error.bin
 
- Detected sample size: 250 individuals
- Buffer window size: 500000 variants (~119 Mb)
+ Detected sample size: 50 individuals
+ Buffer window size: 500000 variants (~23 Mb)
  Data compression: Off
 
  Running
  Writing output file ... OK
  Done
-Process time: 443ms
-Elapsed time: 444ms
+Process time: 215ms
+Elapsed time: 216ms
 Loading data
 << ../tmp/../tmp/error.bin
 
- # individuals: 250 (250 phased)
- # variants:    138
+ # individuals: 50 (50 phased)
+ # variants:    190
 
 This is the end!
-Process time: 496ms
-Elapsed time: 497ms
+Process time: 245ms
+Elapsed time: 245ms

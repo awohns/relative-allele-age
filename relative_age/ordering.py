@@ -64,6 +64,8 @@ class RelativeTimeResults(object):
         self.direct_comparison_distances = distance.direct_distances(msprime_ts,
            self.direct_matrix,self.physical_distances,self.genetic_distances)
         
+        self.accuracy_by_distance = distance.accuracy_by_distance(self.msprime_ts,self.freq_matrix,self.geva_matrix,
+            self.direct_matrix,self.physical_distances,self.genetic_distances)
        
 
         self.freq_metrics = {
@@ -97,14 +99,24 @@ class RelativeTimeResults(object):
             csv_out=csv.writer(out)
             csv_out.writerow([freq_accuracy,geva_accuracy,self.freq_metrics["average distance"],
                 self.geva_metrics["average distance"],average_direct_physical_distance])
+        
+    def update_accuracy_by_distance(self,output_filename):
+
+        with open("../data/"+output_filename+"_freq_accuracy_by_distance", "a") as out:
+            csv_out=csv.writer(out)
+            csv_out.writerow(self.accuracy_by_distance[0,:])
+        with open("../data/"+output_filename+"_geva_accuracy_by_distance", "a") as out:
+            csv_out=csv.writer(out)
+            csv_out.writerow(self.accuracy_by_distance[1,:])
 
     def manually_check_accuracy(self,output_filename):
-        np.savetxt("../data/"+output_filename+"freq_matrix",self.freq_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"geva_matrix",self.geva_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"direct_matrix",self.direct_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"physical_distances",self.physical_distances)
-        np.savetxt("../data/"+output_filename+"freq error distances",self.freq_errors_diagnosis[:,1])
-        np.savetxt("../data/"+output_filename+"geva error distances",self.geva_errors_diagnosis[:,1])
+        np.savetxt("../data/"+output_filename+"_freq_matrix",self.freq_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"_geva_matrix",self.geva_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"_direct_matrix",self.direct_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"_physical_distances",self.physical_distances)
+        np.savetxt("../data/"+output_filename+"_freq error distances",self.freq_errors_diagnosis[:,1])
+        np.savetxt("../data/"+output_filename+"_geva error distances",self.geva_errors_diagnosis[:,1])
+     
         self.msprime_ts.dump("../data/"+output_filename+"simulated_ts")
         self.geva_age_estimates.to_csv("../data/"+output_filename+"geva_age_estimates")
 
