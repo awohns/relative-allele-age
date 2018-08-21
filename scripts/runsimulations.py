@@ -25,7 +25,7 @@ import csv
 import warnings
 warnings.filterwarnings("ignore")
 from argparse import ArgumentParser
-
+import os
 
  
 #multiple replicates at given parameters
@@ -56,6 +56,7 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,erro
         if manual_check == True:
             results.manually_check_accuracy(output)
 
+        results.get_frequencies(output)
 
 
 
@@ -76,11 +77,18 @@ def main():
 
     args = parser.parse_args()
 
+    try:
+        os.makedirs("../data/"+args.output,exist_ok=True)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
     multiple_replicate_results = multiple_replicates(int(args.replicates),int(args.samples),
         int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,args.delete_singletons,
         str(args.output),args.manual_check)
     
+   
+
     # with open(args.output, "a") as out:
     #     csv_out=csv.writer(out)
     #     csv_out.writerow(multiple_replicate_results)

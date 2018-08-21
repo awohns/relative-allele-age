@@ -1,9 +1,12 @@
 import compare
 import simulations
 import distance
+import frequency
 
 import numpy as np
 import csv
+import os, errno
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -89,40 +92,53 @@ class RelativeTimeResults(object):
 
     def write_summary_stats(self,output_filename):
         if self.baseline_comparable != 0:
-            freq_accuracy=self.freq_metrics["comparable_incorrect"]/self.baseline_comparable
-            geva_accuracy=self.geva_metrics["comparable_incorrect"]/self.baseline_comparable
+            direct_freq_accuracy=self.freq_metrics["comparable_incorrect"]/self.baseline_comparable
+            direct_geva_accuracy=self.geva_metrics["comparable_incorrect"]/self.baseline_comparable
         else:
-            freq_accuracy=0
-            geva_accuracy=0
+            direct_freq_accuracy=0
+            direct_geva_accuracy=0
         average_direct_physical_distance=np.nanmean(self.direct_comparison_distances[:,1])
-        with open("../data/"+output_filename, "a") as out:
+        with open("../data/"+output_filename+"/summary_stats", "a") as out:
             csv_out=csv.writer(out)
-            csv_out.writerow([freq_accuracy,geva_accuracy,self.freq_metrics["average distance"],
-                self.geva_metrics["average distance"],average_direct_physical_distance])
+            row=[self.freq_metrics["correct"],self.freq_metrics["incorrect"],self.geva_metrics["correct"],
+            self.geva_metrics["incorrect"],direct_freq_accuracy,direct_geva_accuracy,self.freq_metrics["average distance"],
+                self.geva_metrics["average distance"],average_direct_physical_distance]
+            csv_out.writerow(row)
         
     def update_accuracy_by_distance(self,output_filename):
 
-        with open("../data/"+output_filename+"_freq_accuracy_by_distance", "a") as out:
+        with open("../data/"+output_filename+"/freq_accuracy_by_distance", "a") as out:
             csv_out=csv.writer(out)
             csv_out.writerow(self.accuracy_by_distance[0,:])
-        with open("../data/"+output_filename+"_geva_accuracy_by_distance", "a") as out:
+        with open("../data/"+output_filename+"/geva_accuracy_by_distance", "a") as out:
             csv_out=csv.writer(out)
             csv_out.writerow(self.accuracy_by_distance[1,:])
 
-    def manually_check_accuracy(self,output_filename):
-        np.savetxt("../data/"+output_filename+"_freq_matrix",self.freq_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"_geva_matrix",self.geva_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"_direct_matrix",self.direct_matrix,fmt='%i')
-        np.savetxt("../data/"+output_filename+"_physical_distances",self.physical_distances)
-        np.savetxt("../data/"+output_filename+"_freq error distances",self.freq_errors_diagnosis[:,1])
-        np.savetxt("../data/"+output_filename+"_geva error distances",self.geva_errors_diagnosis[:,1])
+    def manually_check_accuracy(self,output_filename): 
+        np.savetxt("../data/"+output_filename+"/freq_matrix",self.freq_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/geva_matrix",self.geva_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/direct_matrix",self.direct_matrix,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/physical_distances",self.physical_distances)
+        np.savetxt("../data/"+output_filename+"/freq error distances",self.freq_errors_diagnosis[:,1])
+        np.savetxt("../data/"+output_filename+"/geva error distances",self.geva_errors_diagnosis[:,1])
      
-        self.msprime_ts.dump("../data/"+output_filename+"simulated_ts")
-        self.geva_age_estimates.to_csv("../data/"+output_filename+"geva_age_estimates")
+        self.msprime_ts.dump("../data/"+output_filename+"/simulated_ts")
+        self.geva_age_estimates.to_csv("../data/"+output_filename+"/geva_age_estimates")
 
+    def get_frequencies(self,output_filename):
+        """
+        function to ouput: 1. all the frequencies of simulated mutations 
+        2. frequencies of misordered younger mutations
+        3. frequencies of misordered older mutations
+        """
 
+        all_frequencies=frequency.all_frequencies(self.msprime_ts,self.error_sample)
+        # freq_misordered_pairs=frequency.misordered_frequencies(self.msprime_ts,self.error_sample)
+        # geva_misordered_pairs=frequency.misordered_frequencies(self.msprime_ts,self.error_sample)
+        with open("../data/"+output_filename+"/all_frequencies", "a") as out:
+            csv_out=csv.writer(out)
+            csv_out.writerow(all_frequencies)
 
-   
 
 
 

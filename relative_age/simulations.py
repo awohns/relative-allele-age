@@ -54,7 +54,7 @@ def generate_samples(ts, filename, real_error_rate=0):
     record_rate = logging.getLogger().isEnabledFor(logging.INFO)
     n_variants = bits_flipped = 0
     assert ts.num_sites != 0
-    sample_data = tsinfer.SampleData(path="../tmp/"+filename + ".samples", sequence_length=ts.sequence_length)
+    sample_data = tsinfer.SampleData(path="../data/"+filename + "/"+filename+".samples", sequence_length=ts.sequence_length)
     for v in ts.variants():
         n_variants += 1
         if error_param <=0:
