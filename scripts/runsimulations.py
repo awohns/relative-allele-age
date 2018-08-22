@@ -29,7 +29,7 @@ import os
 
  
 #multiple replicates at given parameters
-def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,error_rate,delete_singletons,output,manual_check):
+def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,error_rate,output,manual_check,get_freqs):
     replicates = int(replicates)
     summary_stats = np.zeros((replicates,2))
     geva_corrected = list()
@@ -39,14 +39,15 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,erro
         msprime_ts = simulations.msprime_simulation(output, samples, Ne, length, mut_rate, rec_rate)
         error_sample = simulations.generate_samples(msprime_ts,output,float(error_rate))
 
-        freq_matrix=compare.freq_relative_time(msprime_ts,error_sample,delete_singletons)
-        geva_matrix,geva_age_estimates=compare.geva_all_time_orderings(output,msprime_ts,error_sample,Ne,length,mut_rate,delete_singletons)
-        direct_matrix= compare.directly_comparable(msprime_ts,error_sample,delete_singletons)
+        freq_matrix,freq_matrix_no_singletons=compare.freq_relative_time(msprime_ts,error_sample)
+        geva_matrix,geva_matrix_no_singletons,geva_age_estimates=compare.geva_all_time_orderings(output,msprime_ts,error_sample,Ne,length,mut_rate)
+        direct_matrix,direct_matrix_no_singletons = compare.directly_comparable(msprime_ts,error_sample)
 
 
         results = ordering.RelativeTimeResults(
             samples,Ne,length,mut_rate,rec_rate,msprime_ts,error_sample,geva_age_estimates,
-            freq_matrix,geva_matrix,direct_matrix,error_rate,delete_singletons)
+            freq_matrix,freq_matrix_no_singletons,geva_matrix,geva_matrix_no_singletons,
+            direct_matrix,direct_matrix_no_singletons,error_rate)
 
         
 
@@ -56,7 +57,8 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,erro
         if manual_check == True:
             results.manually_check_accuracy(output)
 
-        results.get_frequencies(output)
+        if get_freqs == True:
+            results.get_frequencies(output)
 
 
 
@@ -71,9 +73,9 @@ def main():
     parser.add_argument("mut_rate")
     parser.add_argument("rec_rate")
     parser.add_argument("error_rate")
-    parser.add_argument("delete_singletons")
     parser.add_argument("output")
     parser.add_argument('-manual_check', action='store_true')
+    parser.add_argument('-get_freqs', action='store_true')
 
     args = parser.parse_args()
 
@@ -84,8 +86,8 @@ def main():
             raise
 
     multiple_replicate_results = multiple_replicates(int(args.replicates),int(args.samples),
-        int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,args.delete_singletons,
-        str(args.output),args.manual_check)
+        int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,
+        str(args.output),args.manual_check,args.get_freqs)
     
    
 

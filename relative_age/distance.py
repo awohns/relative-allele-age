@@ -4,7 +4,7 @@ import numpy as np
 import compare
 
 
-def get_pairwise_genetic_distance(msprime_ts,samples_data,delete_singletons):
+def get_pairwise_genetic_distance(msprime_ts,sample_data):
     #create matrix of pairwise genetic distances between mutations
     num_mutations = len(list(msprime_ts.variants())) 
     genetic_distances = np.zeros((num_mutations,num_mutations))
@@ -15,15 +15,12 @@ def get_pairwise_genetic_distance(msprime_ts,samples_data,delete_singletons):
                 for inner_mutation in inner_tree.mutations():
                     genetic_distances[outer_mutation.index,inner_mutation.index] = abs(outer_tree.index-inner_tree.index)
     
-    if delete_singletons == "True":
-        singletons = compare.find_singletons_sample(samples_data)
-        genetic_distances= np.delete(genetic_distances, singletons, 0)
-        genetic_distances= np.delete(genetic_distances, singletons, 1)
+    genetic_distances_no_singletons=compare.delete_singletons_matrix(sample_data,genetic_distances)
        
-    return(genetic_distances)
+    return(genetic_distances_no_singletons)
 
 
-def get_pairwise_physical_distance(msprime_ts,samples_data,delete_singletons):
+def get_pairwise_physical_distance(msprime_ts,sample_data):
     #create matrix of pairwise physical distances between mutations
     num_mutations = len(list(msprime_ts.variants())) 
     physical_distances = np.zeros((num_mutations,num_mutations))
@@ -32,12 +29,10 @@ def get_pairwise_physical_distance(msprime_ts,samples_data,delete_singletons):
         for inner_mutation in msprime_ts.mutations():
             physical_distances[outer_mutation.index,inner_mutation.index] = abs(outer_mutation.position-inner_mutation.position)
     
-    if delete_singletons == "True":
-        singletons = compare.find_singletons_sample(samples_data)
-        physical_distances= np.delete(physical_distances, singletons, 0)
-        physical_distances= np.delete(physical_distances, singletons, 1)
+
+    physical_distances_no_singletons=compare.delete_singletons_matrix(sample_data,physical_distances)
        
-    return(physical_distances)
+    return(physical_distances_no_singletons)
 
 def mutation_pair(mutation_1, mutation_2, msprime_ts,physical_distance,genetic_distance):
     #1. how far apart are the two mutations
@@ -48,7 +43,7 @@ def mutation_pair(mutation_1, mutation_2, msprime_ts,physical_distance,genetic_d
     
     #how many nodes are they apart in the second
 
-def diagnose_error(msprime_ts, pairwise_matrix_binary,direct_comparisons,physical_distance,genetic_distance):
+def direct_comparison_pair_distance(msprime_ts, pairwise_matrix_binary,direct_comparisons,physical_distance,genetic_distance):
     #look up which pairs of mutations are in the wrong order in pairwise array (either from freq or geva)
     direct_errors = np.add(pairwise_matrix_binary,direct_comparisons)
     wrong_order = np.argwhere(direct_errors == 2)
@@ -56,6 +51,36 @@ def diagnose_error(msprime_ts, pairwise_matrix_binary,direct_comparisons,physica
     
     #wrong_order first array is first mutation's index, second array has second mutations's indices
     for idx,(mut1_index,mut2_index) in enumerate(wrong_order):
+        cur_result = mutation_pair(mut1_index,mut2_index,msprime_ts,physical_distance,genetic_distance)
+        results[idx,0] = cur_result[0]
+        results[idx,1] = cur_result[1]
+        #results[idx,2] = cur_result[2]
+        
+    #return: 1. array of genetic distances of pairwise error; 2. array of physical distances of pairwise error
+    return(results)
+
+def all_misordered_pair_distance(msprime_ts, pairwise_matrix_binary,physical_distance,genetic_distance):
+    #look up which pairs of mutations are in the wrong order in pairwise array (either from freq or geva)
+    wrong_order = np.argwhere(pairwise_matrix_binary == 1)
+    results = np.zeros((len(wrong_order), 2))
+    
+    #wrong_order first array is first mutation's index, second array has second mutations's indices
+    for idx,(mut1_index,mut2_index) in enumerate(wrong_order):
+        cur_result = mutation_pair(mut1_index,mut2_index,msprime_ts,physical_distance,genetic_distance)
+        results[idx,0] = cur_result[0]
+        results[idx,1] = cur_result[1]
+        #results[idx,2] = cur_result[2]
+        
+    #return: 1. array of genetic distances of pairwise error; 2. array of physical distances of pairwise error
+    return(results)
+
+def all_pair_average_distance(msprime_ts,direct_comparisons,physical_distance,genetic_distance):
+    #look up which pairs of mutations are in the wrong order in pairwise array (either from freq or geva)
+    all_direct = np.argwhere((direct_comparisons == 1) | (direct_comparisons == 0))
+    results = np.zeros((len(all_direct), 2))
+    
+    #all_direct first array is first mutation's index, second array has second mutations's indices
+    for idx,(mut1_index,mut2_index) in enumerate(all_direct):
         cur_result = mutation_pair(mut1_index,mut2_index,msprime_ts,physical_distance,genetic_distance)
         results[idx,0] = cur_result[0]
         results[idx,1] = cur_result[1]

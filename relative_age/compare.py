@@ -35,6 +35,11 @@ def find_singletons_sample(sample_data):
     return(singleton_list)
 
 
+def delete_singletons_matrix(sample_data,mut_matrix):
+    singletons = find_singletons_sample(sample_data)
+    mut_matrix_no_singletons= np.delete(mut_matrix, singletons, 0)
+    mut_matrix_no_singletons= np.delete(mut_matrix_no_singletons, singletons, 1)
+    return(mut_matrix_no_singletons)
 
 """
 Frequency comparisons using samples object
@@ -43,15 +48,15 @@ Frequency comparisons using samples object
 
 
 #relative time orderings frequency
-def freq_relative_time(msprime_ts,samples_file,delete_singletons):
-    num_mutations = len(samples_file.sites_genotypes[:])
+def freq_relative_time(msprime_ts,sample_data):
+    num_mutations = len(sample_data.sites_genotypes[:])
     pairwise_matrix_frequency = np.zeros((num_mutations,num_mutations))
     variants=list(msprime_ts.variants())
     
-    for i,outer_geno in enumerate(samples_file.sites_genotypes[:]):
+    for i,outer_geno in enumerate(sample_data.sites_genotypes[:]):
         outer_age = int(msprime_ts.node(variants[i].site.mutations[0].node).time)
         outer_freq = len(outer_geno[outer_geno ==1])/len(outer_geno)
-        for j,inner_geno in enumerate(samples_file.sites_genotypes[:]):
+        for j,inner_geno in enumerate(sample_data.sites_genotypes[:]):
             inner_age = int(msprime_ts.node(variants[j].site.mutations[0].node).time)
             inner_freq = len(inner_geno[inner_geno ==1])/len(inner_geno)
             
@@ -67,13 +72,10 @@ def freq_relative_time(msprime_ts,samples_file,delete_singletons):
                 
                 pairwise_matrix_frequency[i,j] = 1
     
-    if delete_singletons == "True":
-        
-        singletons = find_singletons_sample(samples_file)
-        pairwise_matrix_frequency= np.delete(pairwise_matrix_frequency, singletons, 0)
-        pairwise_matrix_frequency= np.delete(pairwise_matrix_frequency, singletons, 1)
-        
-    return(pairwise_matrix_frequency)
+    
+    pairwise_matrix_frequency_no_singletons=delete_singletons_matrix(sample_data,pairwise_matrix_frequency)
+    
+    return(pairwise_matrix_frequency,pairwise_matrix_frequency_no_singletons)
 
 
 
@@ -157,7 +159,7 @@ def geva_sample_estimate_age(file_name,sample_data,Ne,length,mut_rate):
 
 
 #removes singletons
-def geva_all_time_orderings(file_name,msprime_ts,sample_data,Ne,length,mutation_rate,delete_singletons):
+def geva_all_time_orderings(file_name,msprime_ts,sample_data,Ne,length,mutation_rate):
     num_mutations = len(list(msprime_ts.variants())) 
     pairwise_matrix_geva = np.zeros((num_mutations,num_mutations))
 
@@ -188,13 +190,9 @@ def geva_all_time_orderings(file_name,msprime_ts,sample_data,Ne,length,mutation_
             else:
                 pairwise_matrix_geva[variant_outer.index,variant_inner.index] = np.nan
     
-    if delete_singletons == "True":
-        singletons = find_singletons_sample(sample_data)
-        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 0)
-        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 1)
+    pairwise_matrix_geva_no_singletons=delete_singletons_matrix(sample_data,pairwise_matrix_geva)    
         
-        
-    return(pairwise_matrix_geva,age_estimates)
+    return(pairwise_matrix_geva,pairwise_matrix_geva_no_singletons,age_estimates)
 
 
 
@@ -214,7 +212,7 @@ def get_geva_corrected(geva,freq,direct_comparsion):
 #This means, which pair of mutations share a node as an ancestor or descendant
 #if mutations have the same node as an ancestor or descedent, then they are directly comparable
 #in other words, we know the relative time ordering (topology), locally
-def directly_comparable(msprime_ts,sample_data,delete_singletons):
+def directly_comparable(msprime_ts,sample_data):
     total_yes = 0
     #get the total number of variants and make a zero np array of that shape
     num_mutations = len(list(msprime_ts.variants()))
@@ -233,9 +231,7 @@ def directly_comparable(msprime_ts,sample_data,delete_singletons):
                     if mutation.node == cur_node:
                         pairwise_matrix_same_tree[cur_mutation.index,mutation.index] = 1
                         pairwise_matrix_same_tree[mutation.index,cur_mutation.index] = 1
-    if delete_singletons == "True":
-        singletons = find_singletons_sample(sample_data)
-        pairwise_matrix_same_tree= np.delete(pairwise_matrix_same_tree, singletons, 0)
-        pairwise_matrix_same_tree= np.delete(pairwise_matrix_same_tree, singletons, 1)
-        
-    return(pairwise_matrix_same_tree)
+    
+    pairwise_matrix_same_tree_no_singletons=delete_singletons_matrix(sample_data,pairwise_matrix_same_tree) 
+   
+    return(pairwise_matrix_same_tree,pairwise_matrix_same_tree_no_singletons)
