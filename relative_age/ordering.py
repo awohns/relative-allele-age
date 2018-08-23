@@ -143,23 +143,28 @@ class RelativeTimeResults(object):
             csv_out.writerow(self.accuracy_by_distance[1,:])
 
     def manually_check_accuracy(self,output_filename): 
-        np.savetxt("../data/"+output_filename+"/freq_matrix_no_singletons",self.freq_matrix_no_singletons,fmt='%i')
-        np.savetxt("../data/"+output_filename+"/geva_matrix_no_singletons",self.geva_matrix_no_singletons,fmt='%i')
-        np.savetxt("../data/"+output_filename+"/direct_matrix_no_singletons",self.direct_matrix_no_singletons,fmt='%i')
-        np.savetxt("../data/"+output_filename+"/physical_distances_no_singletons",self.physical_distances_no_singletons)
-        np.savetxt("../data/"+output_filename+"/freq error distances",self.freq_direct_error_distance[:,1])
-        np.savetxt("../data/"+output_filename+"/geva error distances",self.geva_direct_error_distance[:,1])
+        np.savetxt("../data/"+output_filename+"/freq_matrix_no_singletons",
+            self.freq_matrix_no_singletons,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/geva_matrix_no_singletons",
+            self.geva_matrix_no_singletons,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/direct_matrix_no_singletons",
+            self.direct_matrix_no_singletons,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/physical_distances_no_singletons",
+            self.physical_distances_no_singletons)
+        np.savetxt("../data/"+output_filename+"/freq error distances",
+            self.freq_direct_error_distance[:,1])
+        np.savetxt("../data/"+output_filename+"/geva error distances",
+            self.geva_direct_error_distance[:,1])
         
         self.msprime_ts.dump("../data/"+output_filename+"/simulated_ts")
         self.geva_age_estimates.to_csv("../data/"+output_filename+"/geva_age_estimates")
 
-    def get_frequencies(self,output_filename):
-        """
+    """
         function to ouput: 1. all the frequencies of simulated mutations 
         2. tuple of misordered freq pairs by frequency
         3. tuple of misordered freq pairs by GEVA
-        """
-
+    """
+    def get_frequencies(self,output_filename):
         all_frequencies=frequency.all_frequencies(self.error_sample)
         freq_misordered_pairs=frequency.misordered_frequencies(self.error_sample,self.freq_matrix)
         geva_misordered_pairs=frequency.misordered_frequencies(self.error_sample,self.geva_matrix)
@@ -175,6 +180,18 @@ class RelativeTimeResults(object):
             csv_out=csv.writer(out)
             csv_out.writerow(geva_misordered_pairs)
 
+    """
+    this only uses the msprime tree, not the sample data simulated with error!
+    """
+    def tree_imbalance(self,output_filename):
+        freq_colless_correlation=imbalance.colless_correlate_error(self.msprime_ts,
+            self.freq_matrix,self.direct_matrix)
+        freq_sackin_correlation=imbalance.sackin_correlate_error(self.msprime_ts,
+            self.freq_matrix,self.direct_matrix)
+
+    #CURRENTLY WORKING ON THIS
+    # def overlap_geva_freq_misordering(self):
+    #     np.equal(self.freq_matrix_no_singletons,self.geva_matrix_no_singletons)
 
 
 
