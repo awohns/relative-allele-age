@@ -120,9 +120,11 @@ def accuracy_by_distance(msprime_ts,freq_matrix,geva_matrix,direct_matrix,physic
         results[idx,2] = freq_matrix[mut1_index,mut2_index]
         results[idx,3] = geva_matrix[mut1_index,mut2_index]
     
-    #Using the resulting numpy array of tuples, make regularly spaced bins of 1000 bp and record accuracy
+    #Using the resulting numpy array of tuples, make regularly spaced bins of 500 bp and record accuracy
     #for each bin (number of 1's divded by 0's + 1's)
-    bins=np.arange(0,50000,250)
+    sequence_length=msprime_ts.get_sequence_length()
+
+    bins=np.arange(0,sequence_length,500)
     results[:,4]=np.digitize(results[:,1],bins)
 
 

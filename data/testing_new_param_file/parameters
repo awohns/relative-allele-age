@@ -1,0 +1,10 @@
+Number of Replicates: 1
+Number of Samples: 1000
+Effective Population Size: 10000
+Simulated Sequence Length: 10000
+Mutation Rate: 2e-8
+Recombination Rate: 2e-8
+Error Rate: 0
+Output Name: testing_new_param_file
+Manual Check? False
+Get Frequencies? False

@@ -85,6 +85,18 @@ def main():
         if e.errno != errno.EEXIST:
             raise
 
+    with open("../data/"+str(args.output)+"/parameters", "w") as out:
+        out.write("Number of Replicates: "+str(args.replicates)+
+            "\nNumber of Samples: " + str(args.samples) +
+            "\nEffective Population Size: " + str(args.Ne) +
+            "\nSimulated Sequence Length: " + str(args.length) +
+            "\nMutation Rate: " + str(args.mut_rate) +
+            "\nRecombination Rate: " + str(args.rec_rate) + 
+            "\nError Rate: " + str(args.error_rate) +
+            "\nOutput Name: " + str(args.output) + 
+            "\nManual Check? " + str(args.manual_check) + 
+            "\nGet Frequencies? " + str(args.get_freqs))
+
     multiple_replicate_results = multiple_replicates(int(args.replicates),int(args.samples),
         int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,
         str(args.output),args.manual_check,args.get_freqs)
