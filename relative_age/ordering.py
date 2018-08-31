@@ -91,6 +91,7 @@ class RelativeTimeResults(object):
         self.direct_comparison_distances = distance.direct_distances(msprime_ts,
            self.direct_matrix_no_singletons,self.physical_distances_no_singletons,self.genetic_distances_no_singletons)
         
+        #Accuracy by distance for directly comparable pairs
         self.accuracy_by_distance = distance.accuracy_by_distance(self.msprime_ts,self.freq_matrix_no_singletons,self.geva_matrix_no_singletons,
             self.direct_matrix_no_singletons,self.physical_distances_no_singletons,self.genetic_distances_no_singletons)
        

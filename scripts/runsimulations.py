@@ -29,7 +29,7 @@ import os
 
  
 #multiple replicates at given parameters
-def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,error_rate,output,manual_check,get_freqs):
+def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate, error_rate, output, manual_check, get_freqs):
     replicates = int(replicates)
     summary_stats = np.zeros((replicates,2))
     geva_corrected = list()
@@ -37,7 +37,11 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate,erro
     for replicate_num in tqdm(range(0,replicates)):
         
         msprime_ts = simulations.msprime_simulation(output, samples, Ne, length, mut_rate, rec_rate)
-        error_sample = simulations.generate_samples(msprime_ts,output,float(error_rate))
+
+        if error_rate == "empirical":
+            error_sample = simulations.generate_samples_genotype(msprime_ts,output)
+        else:
+            error_sample = simulations.generate_samples(msprime_ts,output,float(error_rate))
 
         freq_matrix,freq_matrix_no_singletons=compare.freq_relative_time(msprime_ts,error_sample)
         geva_matrix,geva_matrix_no_singletons,geva_age_estimates=compare.geva_all_time_orderings(output,msprime_ts,error_sample,Ne,length,mut_rate)

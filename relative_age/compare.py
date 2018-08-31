@@ -235,3 +235,42 @@ def directly_comparable(msprime_ts,sample_data):
     pairwise_matrix_same_tree_no_singletons=delete_singletons_matrix(sample_data,pairwise_matrix_same_tree) 
    
     return(pairwise_matrix_same_tree,pairwise_matrix_same_tree_no_singletons)
+
+
+def colless_index(tree):
+    """
+    Calculate colless statistic for given tree
+    """
+    colless_index=0
+    for node in tree.nodes():
+        children=tree.get_children(node)
+        if children != ():
+            colless_index=colless_index+abs(len(list(tree.get_leaves(children[0])))-len(list(tree.get_leaves(children[1]))))
+    return(colless_index)
+
+
+def sackin_index(ts):
+    """
+    Calculate sackin index for given tree
+    """
+    #add the number of internal nodes between each leaf of the tree and the root (inclusive)
+    sackin_stat=list()
+    for leaf in list(tree.leaves()):
+        cur_leaf=0
+        cur_node=tree.parent(leaf)
+        while cur_node != -1:
+            cur_node=tree.parent(cur_node)
+            cur_leaf=cur_leaf+1
+        sackin_stat.append(cur_leaf)
+    return(np.var(sackin_stat))
+
+def tree_imbalance_ts(ts, samples, freq, geva, direct):
+    for tree in simulated_ts.trees():
+        colless_index=0
+        colless_index.append(colless_index(tree))
+
+
+    for tree in simulated_ts.trees():
+        sackin_stat=list()
+        sackin_stat.append(sackin_index(tree))
+
