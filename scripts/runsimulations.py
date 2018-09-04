@@ -5,7 +5,7 @@ age estimation, metrics on resulting trees, error
 generation etc. are in other modules. 
 """
 import sys
-sys.path.insert(0, '../relative_age')
+sys.path.insert(0, "/home/wilderwohns/relative_allele_age/relative_age")
 import simulations
 import compare
 import ordering
@@ -29,7 +29,7 @@ import os
 
  
 #multiple replicates at given parameters
-def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate, error_rate, output, manual_check, get_freqs):
+def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate, error_rate, output, manual_check, get_freqs, get_imbalance):
     replicates = int(replicates)
     summary_stats = np.zeros((replicates,2))
     geva_corrected = list()
@@ -64,6 +64,8 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate, err
         if get_freqs == True:
             results.get_frequencies(output)
 
+        if get_imbalance == True:
+            results.get_tree_imbalance(output)
 
 
 
@@ -80,6 +82,7 @@ def main():
     parser.add_argument("output")
     parser.add_argument('-manual_check', action='store_true')
     parser.add_argument('-get_freqs', action='store_true')
+    parser.add_argument('-get_imbalance', action='store_true')
 
     args = parser.parse_args()
 
@@ -99,11 +102,12 @@ def main():
             "\nError Rate: " + str(args.error_rate) +
             "\nOutput Name: " + str(args.output) + 
             "\nManual Check? " + str(args.manual_check) + 
-            "\nGet Frequencies? " + str(args.get_freqs))
+            "\nGet Frequencies? " + str(args.get_freqs) +
+            "\nGet Imbalance? " + str(args.get_imbalance))
 
     multiple_replicate_results = multiple_replicates(int(args.replicates),int(args.samples),
         int(args.Ne),int(args.length),float(args.mut_rate),float(args.rec_rate),args.error_rate,
-        str(args.output),args.manual_check,args.get_freqs)
+        str(args.output),args.manual_check,args.get_freqs,args.get_imbalance)
     
    
 

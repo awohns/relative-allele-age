@@ -6,6 +6,8 @@ import msprime
 import tsinfer
 import logging
 import warnings
+import itertools
+from sklearn.metrics import matthews_corrcoef
 warnings.filterwarnings("ignore")
 
 """
@@ -273,4 +275,24 @@ def tree_imbalance_ts(ts, samples, freq, geva, direct):
     for tree in simulated_ts.trees():
         sackin_stat=list()
         sackin_stat.append(sackin_index(tree))
+
+"""
+Get Phi coefficient between the frequency and geva pairwise comparison matrices (no singletons)
+"""
+def get_phi_no_singletons(freq_matrix_no_singletons,geva_matrix_no_singletons,direct_matrix_no_singletons=None):
+    
+    if direct_matrix_no_singletons is not None:
+        freq_direct_comparison = np.add(freq_matrix_no_singletons,direct_matrix_no_singletons)
+        geva_direct_comparison = np.add(geva_matrix_no_singletons,direct_matrix_no_singletons)
+        mutation_pairs=itertools.combinations(range(0,freq_direct_comparison.shape[0]),2)
+        freq_array=[1 if freq_matrix_no_singletons[pair[0],pair[1]] == 2 else 0 for pair in itertools.combinations(range(0,freq_matrix_no_singletons.shape[0]),2)]
+        geva_array=[1 if geva_matrix_no_singletons[pair[0],pair[1]] == 2 else 0 for pair in itertools.combinations(range(0,geva_matrix_no_singletons.shape[0]),2)]
+
+    else:
+        mutation_pairs=itertools.combinations(range(0,freq_matrix_no_singletons.shape[0]),2)
+        freq_array=[freq_matrix_no_singletons[pair[0],pair[1]] for pair in itertools.combinations(range(0,freq_matrix_no_singletons.shape[0]),2)]
+        geva_array=[geva_matrix_no_singletons[pair[0],pair[1]] for pair in itertools.combinations(range(0,geva_matrix_no_singletons.shape[0]),2)]
+    #geva_array = [0 if math.isnan(x) else x for x in geva_array]
+    return(matthews_corrcoef(freq_array, geva_array, sample_weight=None))
+
 

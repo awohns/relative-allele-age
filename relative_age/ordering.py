@@ -2,10 +2,12 @@ import compare
 import simulations
 import distance
 import frequency
+import imbalance
 
 import numpy as np
 import csv
 import os, errno
+import os.path
 
 
 import warnings
@@ -113,7 +115,8 @@ class RelativeTimeResults(object):
             "average all distance":np.nanmean(self.geva_all_error_distance[:,1])
         }
         
-        
+        self.phi_coefficient_no_singletons_all = compare.get_phi_no_singletons(self.freq_matrix_no_singletons,self.geva_matrix_no_singletons)
+        self.phi_coefficient_no_singletons_direct = compare.get_phi_no_singletons(self.freq_matrix_no_singletons,self.geva_matrix_no_singletons, self.direct_matrix_no_singletons)
 
  
 
@@ -126,13 +129,37 @@ class RelativeTimeResults(object):
             direct_geva_accuracy=0
         average_direct_physical_distance=np.nanmean(self.direct_comparison_distances[:,1])
         average_all_physical_distance=np.nanmean(self.all_pair_average_distance[:,1])
-        with open("../data/"+output_filename+"/summary_stats", "a") as out:
-            csv_out=csv.writer(out)
-            row=[self.freq_metrics["correct"],self.freq_metrics["incorrect"],self.geva_metrics["correct"],
-            self.geva_metrics["incorrect"],direct_freq_accuracy,direct_geva_accuracy,self.freq_metrics["average direct distance"],
-                self.geva_metrics["average direct distance"],average_direct_physical_distance,self.freq_metrics["average all distance"],
-                self.geva_metrics["average all distance"],average_all_physical_distance]
-            csv_out.writerow(row)
+
+        summary_stat_dictionary = {
+            "All Sites: Correct by Frequency" : self.freq_metrics["correct"],
+            "All Sites: Incorrect by Frequency" : self.freq_metrics["incorrect"],
+            "All Sites: Correct by GEVA" : self.geva_metrics["correct"],
+            "All Sites: Incorrect by GEVA" : self.geva_metrics["incorrect"],
+            "Direct Comparison: Frequency Accuracy" : direct_freq_accuracy,
+            "Direct Comparison: GEVA Accuracy" : direct_geva_accuracy,
+
+            "Direct Comparison Distance: Frequency" : self.freq_metrics["average direct distance"],
+            "Direct Comparison Distance: GEVA" : self.geva_metrics["average direct distance"],
+            "Direct Comparison Physical Distance" : average_direct_physical_distance,
+            "All Sites: Average Frequency Distance" : self.freq_metrics["average all distance"],
+            "All Sites: Average GEVA Distance" : self.geva_metrics["average all distance"],
+            "All Sites: Average Distance" : average_all_physical_distance,
+
+            "All Sites: Phi Coefficient" : self.phi_coefficient_no_singletons_all,
+            "Direct Comparison: Phi Coefficient" : self.phi_coefficient_no_singletons_direct
+
+        }
+
+        file_exists = os.path.isfile("../data/"+output_filename+"/summary_stats")
+        with open ("../data/"+output_filename+"/summary_stats", 'a') as csvfile:
+            headers = summary_stat_dictionary.keys()
+            writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n',fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()  # file doesn't exist yet, write a header
+
+            writer.writerow(summary_stat_dictionary)
+
         
     def update_accuracy_by_distance(self,output_filename):
 
@@ -150,6 +177,12 @@ class RelativeTimeResults(object):
             self.geva_matrix_no_singletons,fmt='%i')
         np.savetxt("../data/"+output_filename+"/direct_matrix_no_singletons",
             self.direct_matrix_no_singletons,fmt='%i')
+        np.savetxt("../data/"+output_filename+"/freq_matrix",
+            self.freq_matrix)
+        np.savetxt("../data/"+output_filename+"/geva_matrix",
+            self.geva_matrix)
+        np.savetxt("../data/"+output_filename+"/direct_matrix",
+            self.direct_matrix)
         np.savetxt("../data/"+output_filename+"/physical_distances_no_singletons",
             self.physical_distances_no_singletons)
         np.savetxt("../data/"+output_filename+"/freq error distances",
@@ -166,29 +199,70 @@ class RelativeTimeResults(object):
         3. tuple of misordered freq pairs by GEVA
     """
     def get_frequencies(self,output_filename):
-        all_frequencies=frequency.all_frequencies(self.error_sample)
-        freq_misordered_pairs=frequency.misordered_frequencies(self.error_sample,self.freq_matrix)
-        geva_misordered_pairs=frequency.misordered_frequencies(self.error_sample,self.geva_matrix)
-        with open("../data/"+output_filename+"/all_frequencies", "a") as out:
-            csv_out=csv.writer(out)
-            csv_out.writerow(all_frequencies)
 
-        with open("../data/"+output_filename+"/freq_misordered_frequencies", "a") as out:
-            csv_out=csv.writer(out,escapechar=' ', quoting=csv.QUOTE_NONE)
-            csv_out.writerow(freq_misordered_pairs)
+        frequency_result_dict = {
+            "all_frequencies" : frequency.all_frequencies(self.error_sample),
+            "freq_misordered_pairs" : frequency.misordered_frequencies(self.error_sample,self.freq_matrix),
+            "geva_misordered_pairs" : frequency.misordered_frequencies(self.error_sample,self.geva_matrix),
 
-        with open("../data/"+output_filename+"/geva_misordered_frequencies", "a") as out:
-            csv_out=csv.writer(out)
-            csv_out.writerow(geva_misordered_pairs)
+            "all_frequencies_diff" : frequency.all_frequencies(self.error_sample,difference=True),
+            "freq_misordered_pairs_diff" : frequency.misordered_frequencies(self.error_sample,self.freq_matrix,difference=True),
+            "geva_misordered_pairs_diff" : frequency.misordered_frequencies(self.error_sample,self.geva_matrix,difference=True),
+
+            "direct_frequency" : frequency.misordered_frequencies(self.error_sample,self.direct_matrix),
+            "freq_direct" : frequency.misordered_frequencies(self.error_sample,self.freq_matrix,self.direct_matrix),
+            "geva_direct" : frequency.misordered_frequencies(self.error_sample,self.geva_matrix,self.direct_matrix),
+
+            "direct_diff" : frequency.misordered_frequencies(self.error_sample,self.direct_matrix,difference=True),
+            "direct_frequency_diff" : frequency.misordered_frequencies(self.error_sample,self.freq_matrix,self.direct_matrix,difference=True),
+            "direct_geva_diff" : frequency.misordered_frequencies(self.error_sample,self.geva_matrix,self.direct_matrix,difference=True)
+        }
+        
+        frequency_result_dict_averages = {k: np.mean(v) for k, v in frequency_result_dict.items()}
+
+        file_exists = os.path.isfile("../data/"+output_filename+"/frequency_stats")
+        with open ("../data/"+output_filename+"/frequency_stats", 'a') as csvfile:
+            headers = frequency_result_dict_averages.keys()
+            writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n',fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()  # file doesn't exist yet, write a header
+
+            writer.writerow(frequency_result_dict_averages)
+
 
     """
+    Get metrics on how imbalanced trees are
     this only uses the msprime tree, not the sample data simulated with error!
     """
-    def tree_imbalance(self,output_filename):
-        freq_colless_correlation=imbalance.colless_correlate_error(self.msprime_ts,
-            self.freq_matrix,self.direct_matrix)
-        freq_sackin_correlation=imbalance.sackin_correlate_error(self.msprime_ts,
-            self.freq_matrix,self.direct_matrix)
+    def get_tree_imbalance(self,output_filename):
+        imbalanced_dictionary = imbalance.make_imbalance_dictionary(self.msprime_ts)
+
+        imbalance_result_dictionary = {
+            "all_average" : imbalance.all_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts, self.error_sample),
+            "direct_average" : imbalance.binary_matrix_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts,self.error_sample,self.direct_matrix),
+            "freq_all_average" : imbalance.binary_matrix_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts,self.error_sample,self.freq_matrix),
+            "geva_all_average" : imbalance.binary_matrix_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts,self.error_sample,self.geva_matrix),
+            "freq_direct_average" : imbalance.binary_matrix_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts,self.error_sample,self.freq_matrix,self.direct_matrix),
+            "geva_direct_average" : imbalance.binary_matrix_avg_tree_imbalance(imbalanced_dictionary,self.msprime_ts,self.error_sample,self.geva_matrix,self.direct_matrix)
+        }
+        
+
+        file_exists = os.path.isfile("../data/"+output_filename+"/imbalance_stats")
+        with open ("../data/"+output_filename+"/imbalance_stats", 'a') as csvfile:
+            headers = imbalance_result_dictionary.keys()
+            writer = csv.DictWriter(csvfile, delimiter=',', lineterminator='\n',fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()  # file doesn't exist yet, write a header
+
+            writer.writerow(imbalance_result_dictionary)
+        
+
+        # with open("../data/"+output_filename+"/imbalance_stats", "a") as out:
+        #     w = csv.DictWriter(out, imbalance_result_dictionary.keys())
+        #     w.writeheader()
+        #     w.writerow(imbalance_result_dictionary)
 
     #CURRENTLY WORKING ON THIS
     # def overlap_geva_freq_misordering(self):
