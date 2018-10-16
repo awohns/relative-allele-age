@@ -5,59 +5,16 @@ import pandas as pd
 GEVA comparisons
 """
 
-def geva_age_estimate(file_name,ne,mut_rate):
-    subprocess.check_output(["../bin/rvage_dev3/./rvage_dev3", '--vcf', file_name+".vcf", "-o","../tmp/"+file_name], cwd=r'/Users/anthonywohns/Documents/mcvean_group/relative_allele_age/tests')
+def geva_age_estimate(file_name,ne,rec_rate,mut_rate):
+    subprocess.check_output(["../bin/geva/./geva_v1beta", '--vcf', file_name+".vcf","--rec", rec_rate, "--out","../tmp/"+file_name])
     with open("../tmp/"+file_name+".positions.txt","wb") as out:
         subprocess.call(["awk", "NR>3 {print last} {last = $3}", "../tmp/"+file_name+".marker.txt"], stdout=out)
     try:
-        subprocess.check_output(["../bin/rvage_dev3/./rvage_dev3", "age", "-i", "../tmp/"+ file_name+".bin", "--positions", "../tmp/"+file_name+".positions.txt", "-m","hmm","--hmm","../bin/rvage_dev3/_initials.hhmm.tru","../bin/rvage_dev3/_emission.hhmm.tru.100","--Ne",'10000', "--mut", '2e-8',"--selectNN","1","--maxConcordant","100","--maxDiscordant", "100","-o","../tmp/"+file_name+"_estimation"])
+        subprocess.check_output(["../bin/geva/./geva_v1beta", "-i", "../tmp/"+ file_name+".bin", "--positions", "../tmp/"+file_name+".positions.txt","--hmm","../bin/geva/hmm/hmm_initial_probs.txt ","../bin/geva/hmm/hmm_emission_probs.txt","--Ne", ne, "--mut", mut_rate,"-o","../tmp/"+file_name+"_estimation"])
     except subprocess.CalledProcessError as grepexc:
         print(grepexc.output)
-    age_estimates = pd.read_csv("../tmp/"+file_name+"_estimation.cle.txt", sep = " ")
+    age_estimates = pd.read_csv("../tmp/"+file_name+".marker.txt", sep = " ")
     return(age_estimates)
-
-
-#removes singletons
-def old_geva_relative_time(msprime_ts, vcf_name, Ne, mutation_rate,directly_comparable_matrix,delete_singletons):
-    num_mutations = len(list(msprime_ts.variants())) 
-    pairwise_matrix_geva = np.zeros((num_mutations,num_mutations))
-
-    #age estimation
-    age_estimates = geva_age_estimate(vcf_name,Ne,mutation_rate)
-
-    #Loop through all pairs of variants
-    #for each pair, determine whether one should be older than other by msprime
-    #then check whether GEVA: a. confirms, b. refutes, c. can't say
-    for variant_outer in msprime_ts.variants():  
-        outer_age = int(msprime_ts.node(variant_outer.site.mutations[0].node).time)
-
-        outer_age_estimate = find_age(variant_outer.index,age_estimates)
-
-        for variant_inner in msprime_ts.variants():
-
-
-            inner_age = int(msprime_ts.node(variant_inner.site.mutations[0].node).time)
-            inner_age_estimate = find_age(variant_inner.index,age_estimates)
-            if outer_age_estimate is not None and inner_age_estimate is not None:
-                if outer_age == inner_age:
-                    pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 0
-                else:
-                    if ((outer_age < inner_age) == (outer_age_estimate < inner_age_estimate)):
-                        pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 0
-                    else:
-                        pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 1
-            else:
-                pairwise_matrix_geva[variant_outer.index,variant_inner.index] = np.nan
-    
-    if delete_singletons:
-        singletons = find_singletons(msprime_ts)
-        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 0)
-        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 1)
-        
-        
-    return(pairwise_matrix_geva)
-
-
 
 def get_geva_corrected(geva,freq,direct_comparsion):
     geva_inverse=1-geva
@@ -69,9 +26,6 @@ def get_geva_corrected(geva,freq,direct_comparsion):
         return(None)
     else:
         return(len(geva_corrected[geva_corrected == 2])/num_wrong_freq_direct)
-
-
-
 
 #I compared with geva_age_estimate and it's good
 def geva_with_error(sample_data,Ne,length,mut_rate):
@@ -118,7 +72,7 @@ def geva_with_error(sample_data,Ne,length,mut_rate):
 
     df.to_csv(output_VCF, sep="\t", mode='a',index=False)
     
-    return(geva_age_estimate("../tmp/error",10000,2e-8))
+    return(geva_age_estimate("../tmp/error",10000,2e-8,2e-8))
 
 
 
@@ -129,6 +83,50 @@ def geva_all_time_orderings(msprime_ts,sample_data,Ne,length,mutation_rate,delet
 
     #age estimation
     age_estimates = geva_with_error(sample_data,Ne,length,mutation_rate)
+
+    #Loop through all pairs of variants
+    #for each pair, determine whether one should be older than other by msprime
+    #then check whether GEVA: a. confirms, b. refutes, c. can't say
+    for variant_outer in msprime_ts.variants():  
+        outer_age = int(msprime_ts.node(variant_outer.site.mutations[0].node).time)
+
+        outer_age_estimate = find_age(variant_outer.index,age_estimates)
+
+        for variant_inner in msprime_ts.variants():
+
+
+            inner_age = int(msprime_ts.node(variant_inner.site.mutations[0].node).time)
+            inner_age_estimate = find_age(variant_inner.index,age_estimates)
+            if outer_age_estimate is not None and inner_age_estimate is not None:
+                if outer_age == inner_age:
+                    pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 0
+                else:
+                    if ((outer_age < inner_age) == (outer_age_estimate < inner_age_estimate)):
+                        pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 0
+                    else:
+                        pairwise_matrix_geva[variant_outer.index,variant_inner.index] = 1
+            else:
+                pairwise_matrix_geva[variant_outer.index,variant_inner.index] = np.nan
+    
+    if delete_singletons:
+        singletons = find_singletons(msprime_ts)
+        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 0)
+        pairwise_matrix_geva= np.delete(pairwise_matrix_geva, singletons, 1)
+        
+        
+    return(pairwise_matrix_geva)
+
+
+
+
+
+#removes singletons
+def old_geva_relative_time(msprime_ts, vcf_name, Ne, mutation_rate,directly_comparable_matrix,delete_singletons):
+    num_mutations = len(list(msprime_ts.variants())) 
+    pairwise_matrix_geva = np.zeros((num_mutations,num_mutations))
+
+    #age estimation
+    age_estimates = geva_age_estimate(vcf_name,Ne,mutation_rate)
 
     #Loop through all pairs of variants
     #for each pair, determine whether one should be older than other by msprime

@@ -9,6 +9,7 @@ sys.path.insert(0, "/home/wilderwohns/relative_allele_age/relative_age")
 import simulations
 import compare
 import ordering
+import empirical_error
 
 import msprime
 import numpy as np
@@ -39,7 +40,7 @@ def multiple_replicates(replicates, samples, Ne, length, mut_rate, rec_rate, err
         msprime_ts = simulations.msprime_simulation(output, samples, Ne, length, mut_rate, rec_rate)
 
         if error_rate == "empirical":
-            error_sample = simulations.generate_samples_genotype(msprime_ts,output)
+            error_sample = empirical_error.generate_samples_empirical(msprime_ts,output,"/home/wilderwohns/relative_allele_age/data/result.profile.1000g.platinum.empirical.csv")
         else:
             error_sample = simulations.generate_samples(msprime_ts,output,float(error_rate))
 
